@@ -1,12 +1,14 @@
+'use client';
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { CalendarIcon, DollarSign, Gift, Recycle } from "lucide-react"
+import { CalendarIcon, DollarSign, Gift } from "lucide-react"
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts"
 
 const pickupHistory = [
@@ -25,7 +27,7 @@ const savingsData = [
     { month: 'Mei', earnings: 51000 },
 ];
 
-function getStatusVariant(status: string) {
+function getStatusVariant(status: string): "default" | "secondary" | "outline" {
     switch (status) {
         case 'Selesai': return 'default';
         case 'Diproses': return 'secondary';
