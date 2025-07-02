@@ -1,5 +1,10 @@
 'use client';
 
+import { useState, useEffect } from "react";
+import { collection, query, where, onSnapshot, orderBy } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import type { Pickup, Saving } from "@/types";
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -10,22 +15,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge"
 import { CalendarIcon, DollarSign, Gift } from "lucide-react"
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts"
-
-const pickupHistory = [
-  { id: "TRX001", date: "2024-05-20", type: "Plastik", weight: "5 kg", points: "Rp 12,500", status: "Selesai" },
-  { id: "TRX002", date: "2024-05-22", type: "Kertas", weight: "3 kg", points: "Rp 4,500", status: "Selesai" },
-  { id: "TRX003", date: "2024-05-25", type: "Botol Kaca", weight: "7 kg", points: "Rp 10,500", status: "Selesai" },
-  { id: "TRX004", date: "2024-05-28", type: "Lainnya", weight: "2 kg", points: "Rp 2,000", status: "Selesai" },
-  { id: "TRX005", date: "2024-06-01", type: "Plastik", weight: "4 kg", points: "Rp 10,000", status: "Diproses" },
-];
-
-const savingsData = [
-    { month: 'Jan', earnings: 25000 },
-    { month: 'Feb', earnings: 32000 },
-    { month: 'Mar', earnings: 45000 },
-    { month: 'Apr', earnings: 38000 },
-    { month: 'Mei', earnings: 51000 },
-];
 
 function getStatusVariant(status: string): "default" | "secondary" | "outline" {
     switch (status) {
@@ -38,6 +27,58 @@ function getStatusVariant(status: string): "default" | "secondary" | "outline" {
 
 
 export default function NasabahDashboardPage() {
+  const [pickupHistory, setPickupHistory] = useState<Pickup[]>([]);
+  const [savingsData, setSavingsData] = useState<Saving[]>([]);
+  // Untuk demonstrasi, kita akan menggunakan ID pengguna yang di-hardcode.
+  // Dalam aplikasi nyata, ini akan berasal dari konteks otentikasi.
+  const userId = "user_siti";
+
+  useEffect(() => {
+    if (!userId) return;
+
+    // Listener realtime untuk riwayat penjemputan
+    const pickupQuery = query(
+      collection(db, "pickups"), 
+      where("userId", "==", userId),
+      orderBy("date", "desc")
+    );
+
+    const unsubscribePickups = onSnapshot(pickupQuery, (querySnapshot) => {
+      const history: Pickup[] = [];
+      querySnapshot.forEach((doc) => {
+        history.push({ id: doc.id, ...doc.data() } as Pickup);
+      });
+      setPickupHistory(history);
+    });
+
+    // Listener realtime untuk data tabungan
+    const savingsQuery = query(
+        collection(db, `users/${userId}/savings`),
+        orderBy("month", "asc") // Asumsi bulan disimpan seperti '2024-01'
+    );
+
+    const unsubscribeSavings = onSnapshot(savingsQuery, (querySnapshot) => {
+        const savings: Saving[] = [];
+        const monthNames = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "Sep", "Okt", "Nov", "Des"];
+        querySnapshot.forEach((doc) => {
+            const data = doc.data() as Omit<Saving, 'month'> & { month: string };
+            const monthIndex = parseInt(data.month.split('-')[1], 10) - 1;
+            savings.push({ ...data, month: monthNames[monthIndex] });
+        });
+        setSavingsData(savings);
+    });
+
+    // Membersihkan listener saat komponen di-unmount
+    return () => {
+      unsubscribePickups();
+      unsubscribeSavings();
+    };
+  }, [userId]);
+
+  const totalSavings = savingsData.reduce((acc, item) => acc + item.earnings, 0);
+  const lastMonthSavings = savingsData.length > 0 ? savingsData[savingsData.length - 1].earnings : 0;
+  const totalPoints = Math.floor(totalSavings / 100);
+
   return (
     <div className="space-y-8">
         <header>
@@ -122,7 +163,7 @@ export default function NasabahDashboardPage() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {pickupHistory.map((item) => (
+                                {pickupHistory.length > 0 ? pickupHistory.map((item) => (
                                     <TableRow key={item.id}>
                                         <TableCell className="font-medium">{item.id}</TableCell>
                                         <TableCell>{item.date}</TableCell>
@@ -131,7 +172,11 @@ export default function NasabahDashboardPage() {
                                         <TableCell>{item.points}</TableCell>
                                         <TableCell><Badge variant={getStatusVariant(item.status)}>{item.status}</Badge></TableCell>
                                     </TableRow>
-                                ))}
+                                )) : (
+                                    <TableRow>
+                                        <TableCell colSpan={6} className="text-center">Belum ada histori penjemputan.</TableCell>
+                                    </TableRow>
+                                )}
                             </TableBody>
                         </Table>
                     </CardContent>
@@ -144,7 +189,7 @@ export default function NasabahDashboardPage() {
                         <Card>
                             <CardHeader>
                                 <CardTitle>Grafik Tabungan</CardTitle>
-                                <CardDescription>Perkembangan tabungan Anda selama 5 bulan terakhir.</CardDescription>
+                                <CardDescription>Perkembangan tabungan Anda selama beberapa bulan terakhir.</CardDescription>
                             </CardHeader>
                             <CardContent className="h-[300px] w-full">
                                 <ResponsiveContainer>
@@ -162,10 +207,14 @@ export default function NasabahDashboardPage() {
                         <Card className="bg-primary text-primary-foreground">
                             <CardHeader className="pb-2">
                                 <CardDescription className="text-primary-foreground/80">Total Tabungan</CardDescription>
-                                <CardTitle className="text-4xl">Rp 189,500</CardTitle>
+                                <CardTitle className="text-4xl">
+                                    {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(totalSavings)}
+                                </CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <div className="text-xs text-primary-foreground/80">+Rp 51,000 dari bulan lalu</div>
+                                <div className="text-xs text-primary-foreground/80">
+                                    +{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(lastMonthSavings)} dari bulan lalu
+                                </div>
                             </CardContent>
                         </Card>
                          <Card>
@@ -174,7 +223,7 @@ export default function NasabahDashboardPage() {
                                 <Gift className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold">1,895</div>
+                                <div className="text-2xl font-bold">{new Intl.NumberFormat('id-ID').format(totalPoints)}</div>
                                 <p className="text-xs text-muted-foreground">Tukarkan dengan hadiah menarik!</p>
                             </CardContent>
                         </Card>
