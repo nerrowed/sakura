@@ -9,6 +9,7 @@ import {
   SidebarMenuButton,
   SidebarFooter,
   SidebarTrigger,
+  useSidebar,
 } from '@/components/ui/sidebar';
 import {
   LayoutDashboard,
@@ -26,7 +27,6 @@ import {
 import Link from 'next/link';
 import { Button } from './ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
-import { useSidebar } from '@/hooks/use-sidebar';
 
 const commonLinks = [
   { href: '/notifikasi', label: 'Notifikasi', icon: BellRing },
