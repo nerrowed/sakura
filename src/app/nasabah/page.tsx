@@ -9,8 +9,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { BarChart3, HelpCircle, ClipboardList, Loader2 } from "lucide-react";
+import { BarChart3, HelpCircle, ClipboardList, Loader2, AlertTriangle } from "lucide-react";
 import Link from "next/link";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 function getStatusVariant(status: string): "default" | "secondary" | "outline" | "destructive" {
     switch (status) {
@@ -24,12 +25,17 @@ function getStatusVariant(status: string): "default" | "secondary" | "outline" |
 export default function NasabahDashboardPage() {
   const [pickupHistory, setPickupHistory] = useState<Pickup[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
   
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+        setLoading(false);
+        return;
+    };
 
     setLoading(true);
+    setError(null);
     const pickupQuery = query(
       collection(db, "pickups"), 
       where("userId", "==", user.uid),
@@ -43,8 +49,13 @@ export default function NasabahDashboardPage() {
       });
       setPickupHistory(history);
       setLoading(false);
-    }, (error) => {
-      console.error("Error fetching pickup history: ", error);
+    }, (err) => {
+      console.error("Error fetching pickup history: ", err);
+      if (err.code === 'failed-precondition') {
+        setError("Database memerlukan konfigurasi index. Silakan buat index komposit di Firebase Console untuk koleksi 'pickups' (field: userId ascending, date descending). Error ini biasanya menyertakan link untuk membuat index secara otomatis di konsol browser Anda.");
+      } else {
+        setError("Gagal memuat riwayat transaksi.");
+      }
       setLoading(false);
     });
 
@@ -59,6 +70,16 @@ export default function NasabahDashboardPage() {
       <div className="flex justify-center items-center h-full">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
+    );
+  }
+
+  if (error) {
+    return (
+        <Alert variant="destructive">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle>Terjadi Kesalahan Konfigurasi</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+        </Alert>
     );
   }
 
