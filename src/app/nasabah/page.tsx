@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from "react";
-import { collection, query, where, onSnapshot } from "firebase/firestore";
+import { collection, query, where, onSnapshot, orderBy } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/hooks/use-auth";
 import type { Pickup } from "@/types";
@@ -38,7 +38,8 @@ export default function NasabahDashboardPage() {
     setError(null);
     const pickupQuery = query(
       collection(db, "pickups"), 
-      where("userId", "==", user.uid)
+      where("userId", "==", user.uid),
+      orderBy("date", "desc")
     );
 
     const unsubscribe = onSnapshot(pickupQuery, (querySnapshot) => {
@@ -46,12 +47,11 @@ export default function NasabahDashboardPage() {
       querySnapshot.forEach((doc) => {
         history.push({ id: doc.id, ...doc.data() } as Pickup);
       });
-      history.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
       setPickupHistory(history);
       setLoading(false);
     }, (err) => {
       console.error("Error fetching pickup history: ", err);
-      setError("Gagal memuat riwayat transaksi. Silakan coba lagi nanti.");
+      setError("Gagal memuat riwayat transaksi. Error ini biasanya memerlukan pembuatan indeks di Firestore. Silakan periksa konsol browser untuk link pembuatan indeks otomatis.");
       setLoading(false);
     });
 
