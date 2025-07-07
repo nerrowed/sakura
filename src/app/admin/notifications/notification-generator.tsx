@@ -20,7 +20,7 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-export default function NotificationGenerator() {
+const NotificationGenerator = () => {
   const [generatedText, setGeneratedText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -34,7 +34,7 @@ export default function NotificationGenerator() {
     },
   });
 
-  async function onSubmit(values: FormValues) {
+  const onSubmit = async (values: FormValues) => {
     setIsLoading(true);
     setGeneratedText('');
     const result = await generateNotificationAction(values);
@@ -49,12 +49,14 @@ export default function NotificationGenerator() {
         description: result.error,
       });
     }
-  }
+  };
   
   const handleCopy = () => {
-    navigator.clipboard.writeText(generatedText);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(generatedText);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
   };
 
   return (
@@ -154,4 +156,6 @@ export default function NotificationGenerator() {
       </Card>
     </div>
   );
-}
+};
+
+export default NotificationGenerator;
