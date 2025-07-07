@@ -1,6 +1,6 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   SidebarHeader,
   SidebarContent,
@@ -27,6 +27,7 @@ import {
 import Link from 'next/link';
 import { Button } from './ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
+import { useAuth } from '@/hooks/use-auth';
 
 const commonLinks = [
   { href: '/notifikasi', label: 'Notifikasi', icon: BellRing },
@@ -53,33 +54,38 @@ const adminLinks = [
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const { state } = useSidebar();
+  const { user, signOut } = useAuth();
+
   let role = 'User';
   let links = commonLinks;
-  let user = { name: 'User', avatar: '', initial: 'U' };
+  let userName = user?.email?.split('@')[0] || 'User';
+  let userInitial = userName.charAt(0).toUpperCase();
 
   if (pathname.startsWith('/nasabah')) {
     role = 'Nasabah';
     links = [...nasabahLinks, ...commonLinks];
-    user = { name: 'Siti Saleha', avatar: 'https://placehold.co/100x100.png', initial: 'SS' };
   } else if (pathname.startsWith('/petugas')) {
     role = 'Petugas';
     links = [...petugasLinks, ...commonLinks];
-    user = { name: 'Budi Santoso', avatar: 'https://placehold.co/100x100.png', initial: 'BS' };
   } else if (pathname.startsWith('/admin')) {
     role = 'Admin';
     links = [...adminLinks, ...commonLinks];
-    user = { name: 'Admin Utama', avatar: 'https://placehold.co/100x100.png', initial: 'AU' };
   }
 
   const isActive = (href: string) => {
-    // Exact match for main dashboard pages, partial for subpages
     if (href === '/nasabah' || href === '/petugas' || href === '/admin') {
       return pathname === href;
     }
     return pathname.startsWith(href);
   };
   
+  const handleSignOut = async () => {
+    await signOut();
+    router.push('/');
+  }
+
   return (
     <>
       <SidebarHeader className="flex items-center justify-between">
@@ -106,21 +112,19 @@ export function AppSidebar() {
       <SidebarFooter>
         <div className="flex items-center gap-3 p-2 rounded-md transition-colors">
           <Avatar>
-            <AvatarImage src={user.avatar} data-ai-hint="profile picture" />
-            <AvatarFallback>{user.initial}</AvatarFallback>
+            <AvatarImage src={'https://placehold.co/100x100.png'} data-ai-hint="profile picture" />
+            <AvatarFallback>{userInitial}</AvatarFallback>
           </Avatar>
           <div className="flex flex-col overflow-hidden whitespace-nowrap">
-             <span className="font-semibold text-sm truncate">{user.name}</span>
+             <span className="font-semibold text-sm truncate capitalize">{userName}</span>
              <span className="text-xs text-muted-foreground">{role}</span>
           </div>
         </div>
         <SidebarMenu>
             <SidebarMenuItem>
-                 <SidebarMenuButton asChild tooltip={{children: 'Logout'}}>
-                    <Link href="/">
-                        <LogOut />
-                        <span>Logout</span>
-                    </Link>
+                 <SidebarMenuButton onClick={handleSignOut} tooltip={{children: 'Logout'}}>
+                    <LogOut />
+                    <span>Logout</span>
                 </SidebarMenuButton>
             </SidebarMenuItem>
         </SidebarMenu>

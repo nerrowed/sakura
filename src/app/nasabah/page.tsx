@@ -3,12 +3,13 @@
 import { useState, useEffect } from "react";
 import { collection, query, where, onSnapshot, orderBy } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { useAuth } from "@/hooks/use-auth";
 import type { Pickup } from "@/types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { BarChart3, HelpCircle, ClipboardList } from "lucide-react";
+import { BarChart3, HelpCircle, ClipboardList, Loader2 } from "lucide-react";
 import Link from "next/link";
 
 function getStatusVariant(status: string): "default" | "secondary" | "outline" | "destructive" {
@@ -22,36 +23,49 @@ function getStatusVariant(status: string): "default" | "secondary" | "outline" |
 
 export default function NasabahDashboardPage() {
   const [pickupHistory, setPickupHistory] = useState<Pickup[]>([]);
-  // Untuk demonstrasi, kita akan menggunakan ID pengguna yang di-hardcode.
-  const userId = "user_yunita";
-
+  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+  
   useEffect(() => {
-    if (!userId) return;
+    if (!user) return;
 
-    // Listener realtime untuk riwayat penjemputan
+    setLoading(true);
     const pickupQuery = query(
       collection(db, "pickups"), 
-      where("userId", "==", userId),
+      where("userId", "==", user.uid),
       orderBy("date", "desc")
     );
 
-    const unsubscribePickups = onSnapshot(pickupQuery, (querySnapshot) => {
+    const unsubscribe = onSnapshot(pickupQuery, (querySnapshot) => {
       const history: Pickup[] = [];
       querySnapshot.forEach((doc) => {
         history.push({ id: doc.id, ...doc.data() } as Pickup);
       });
       setPickupHistory(history);
+      setLoading(false);
+    }, (error) => {
+      console.error("Error fetching pickup history: ", error);
+      setLoading(false);
     });
 
-    return () => unsubscribePickups();
-  }, [userId]);
+    return () => unsubscribe();
+  }, [user]);
   
   const totalPoints = pickupHistory.reduce((acc, item) => acc + (item.points || 0), 0);
+  const userDisplayName = user?.email?.split('@')[0] || 'Nasabah';
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-full">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">
         <header>
-            <h1 className="text-3xl font-bold font-headline">Selamat datang, Yunita!</h1>
+            <h1 className="text-3xl font-bold font-headline capitalize">Selamat datang, {userDisplayName}!</h1>
         </header>
 
         <div className="grid gap-6 md:grid-cols-2">
@@ -64,7 +78,7 @@ export default function NasabahDashboardPage() {
             <Card>
                 <CardHeader>
                     <CardDescription>Jadwal penjemputan berikutnya</CardDescription>
-                    <CardTitle className="text-4xl">21 Mei 2024</CardTitle>
+                    <CardTitle className="text-4xl">Belum ada</CardTitle>
                 </CardHeader>
             </Card>
         </div>
