@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from "react";
-import { collection, query, where, onSnapshot, orderBy } from "firebase/firestore";
+import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/hooks/use-auth";
 import type { Pickup } from "@/types";
@@ -38,8 +38,7 @@ export default function NasabahDashboardPage() {
     setError(null);
     const pickupQuery = query(
       collection(db, "pickups"), 
-      where("userId", "==", user.uid),
-      orderBy("date", "desc")
+      where("userId", "==", user.uid)
     );
 
     const unsubscribe = onSnapshot(pickupQuery, (querySnapshot) => {
@@ -47,15 +46,12 @@ export default function NasabahDashboardPage() {
       querySnapshot.forEach((doc) => {
         history.push({ id: doc.id, ...doc.data() } as Pickup);
       });
+      history.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
       setPickupHistory(history);
       setLoading(false);
     }, (err) => {
       console.error("Error fetching pickup history: ", err);
-      if (err.code === 'failed-precondition') {
-        setError("Database memerlukan konfigurasi index. Silakan buat index komposit di Firebase Console untuk koleksi 'pickups' (field: userId ascending, date descending). Error ini biasanya menyertakan link untuk membuat index secara otomatis di konsol browser Anda.");
-      } else {
-        setError("Gagal memuat riwayat transaksi.");
-      }
+      setError("Gagal memuat riwayat transaksi. Silakan coba lagi nanti.");
       setLoading(false);
     });
 
@@ -77,7 +73,7 @@ export default function NasabahDashboardPage() {
     return (
         <Alert variant="destructive">
             <AlertTriangle className="h-4 w-4" />
-            <AlertTitle>Terjadi Kesalahan Konfigurasi</AlertTitle>
+            <AlertTitle>Terjadi Kesalahan</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
         </Alert>
     );
