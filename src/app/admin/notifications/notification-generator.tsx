@@ -46,7 +46,7 @@ export default function NotificationGenerator() {
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: result.error,
+        description: result.error || "Gagal menghasilkan teks notifikasi.",
       });
     }
   };
