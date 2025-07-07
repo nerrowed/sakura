@@ -48,7 +48,6 @@ const adminLinks = [
   { href: '/admin', label: 'Statistik', icon: BarChart3 },
   { href: '/admin/users', label: 'Kelola Pengguna', icon: Users },
   { href: '/admin/schedules', label: 'Kelola Jadwal', icon: Truck },
-  { href: '/admin/notifications', label: 'Generator Notifikasi', icon: Bot },
 ];
 
 export function AppSidebar() {
