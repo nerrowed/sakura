@@ -1,14 +1,16 @@
+import type { Timestamp } from 'firebase/firestore';
+
 export interface Pickup {
     id: string;
-    date: any;
+    date: Timestamp;
     type: string;
     weight?: string;
     points?: number;
-    status: 'Selesai' | 'Diproses' | 'Diajukan' | 'Menunggu';
+    status: 'Selesai' | 'Diproses' | 'Diajukan';
     userId: string;
     photoURL?: string | null;
     location?: string;
-    createdAt?: any;
+    createdAt?: Timestamp;
 }
 
 export interface Saving {
