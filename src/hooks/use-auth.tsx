@@ -34,20 +34,25 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       try {
         if (user) {
-          // User is signed in, let's get their role from Firestore.
+          // User is signed in, check for their document in Firestore.
           const userDocRef = doc(db, 'users', user.uid);
           const userDoc = await getDoc(userDocRef);
           
           if (userDoc.exists()) {
+            // User document found, set role from Firestore.
             setUser(user);
             setRole(userDoc.data().role);
           } else {
-            // User exists in Auth, but not in Firestore. This is an inconsistent state.
-            // Log them out to be safe.
-            console.error(`User with UID ${user.uid} not found in Firestore.`);
-            await firebaseSignOut(auth);
-            setUser(null);
-            setRole(null);
+            // User document not found. This can happen on first sign-up.
+            // Create the document with a default 'nasabah' role.
+            const defaultRole = 'nasabah';
+            await setDoc(userDocRef, {
+              email: user.email,
+              role: defaultRole,
+              createdAt: serverTimestamp(),
+            });
+            setUser(user);
+            setRole(defaultRole);
           }
         } else {
           // User is signed out.
@@ -56,7 +61,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
       } catch (error) {
           console.error("Error during authentication state change:", error);
-          // If there's an error (e.g., network issue, bad config), log out the user.
           await firebaseSignOut(auth).catch(e => console.error("Sign out failed during error handling:", e));
           setUser(null);
           setRole(null);
@@ -72,22 +76,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return signInWithEmailAndPassword(auth, email, password);
   };
 
-  const signUp = async (email: string, password: string) => {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
-    // Create user document in Firestore
-    await setDoc(doc(db, 'users', user.uid), {
-      email: user.email,
-      role: 'nasabah', // Default role
-      createdAt: serverTimestamp(),
-    });
-    // The onAuthStateChanged listener will handle setting the user and role state
-    return userCredential;
+  const signUp = (email: string, password: string) => {
+    // Just create the user. The onAuthStateChanged listener will handle
+    // creating the Firestore document.
+    return createUserWithEmailAndPassword(auth, email, password);
   };
 
   const signOut = async () => {
     await firebaseSignOut(auth);
-    setRole(null);
+    // onAuthStateChanged will clear user and role
     router.push('/');
   };
 
