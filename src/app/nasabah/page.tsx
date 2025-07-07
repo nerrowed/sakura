@@ -38,7 +38,8 @@ export default function NasabahDashboardPage() {
     setError(null);
     const pickupQuery = query(
       collection(db, "pickups"), 
-      where("userId", "==", user.uid)
+      where("userId", "==", user.uid),
+      orderBy("date", "desc")
     );
 
     const unsubscribe = onSnapshot(pickupQuery, (querySnapshot) => {
@@ -47,14 +48,6 @@ export default function NasabahDashboardPage() {
         history.push({ id: doc.id, ...doc.data() } as Pickup);
       });
       
-      // Sort client-side to avoid composite index
-      history.sort((a, b) => {
-        if (a.date && b.date) {
-            return b.date.toMillis() - a.date.toMillis();
-        }
-        return 0;
-      });
-
       setPickupHistory(history);
       setLoading(false);
     }, (err) => {

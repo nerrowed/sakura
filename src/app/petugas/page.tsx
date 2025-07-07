@@ -33,11 +33,13 @@ export default function PetugasDashboardPage() {
   useEffect(() => {
     const q = query(
       collection(db, "pickups"), 
-      where("status", "in", ["Diajukan", "Diproses"])
+      where("status", "in", ["Diajukan", "Diproses"]),
+      orderBy("date")
     );
 
     const unsubscribe = onSnapshot(q, async (pickupSnapshot) => {
       setLoading(true);
+      setError(null);
       if (pickupSnapshot.empty) {
         setPickups([]);
         setLoading(false);
@@ -68,14 +70,6 @@ export default function PetugasDashboardPage() {
             userName: userName,
             userInitial: userName.charAt(0).toUpperCase(),
           };
-        });
-
-        // Sort client-side to avoid complex query
-        pickupsWithUserInfo.sort((a, b) => {
-            if (a.date && b.date) {
-                return a.date.toMillis() - b.date.toMillis();
-            }
-            return 0;
         });
 
         setPickups(pickupsWithUserInfo);
