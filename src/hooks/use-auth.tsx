@@ -32,21 +32,37 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        setUser(user);
-        const userDocRef = doc(db, 'users', user.uid);
-        const userDoc = await getDoc(userDocRef);
-        if (userDoc.exists()) {
-          setRole(userDoc.data().role);
+      try {
+        if (user) {
+          // User is signed in, let's get their role from Firestore.
+          const userDocRef = doc(db, 'users', user.uid);
+          const userDoc = await getDoc(userDocRef);
+          
+          if (userDoc.exists()) {
+            setUser(user);
+            setRole(userDoc.data().role);
+          } else {
+            // User exists in Auth, but not in Firestore. This is an inconsistent state.
+            // Log them out to be safe.
+            console.error(`User with UID ${user.uid} not found in Firestore.`);
+            await firebaseSignOut(auth);
+            setUser(null);
+            setRole(null);
+          }
         } else {
-          // If user exists in Auth but not in Firestore, treat as an error or log them out
+          // User is signed out.
+          setUser(null);
           setRole(null);
         }
-      } else {
-        setUser(null);
-        setRole(null);
+      } catch (error) {
+          console.error("Error during authentication state change:", error);
+          // If there's an error (e.g., network issue, bad config), log out the user.
+          await firebaseSignOut(auth).catch(e => console.error("Sign out failed during error handling:", e));
+          setUser(null);
+          setRole(null);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     return () => unsubscribe();
