@@ -33,8 +33,7 @@ export default function PetugasDashboardPage() {
   useEffect(() => {
     const q = query(
       collection(db, "pickups"), 
-      where("status", "in", ["Diajukan", "Diproses"]), 
-      orderBy("date", "asc")
+      where("status", "in", ["Diajukan", "Diproses"])
     );
 
     const unsubscribe = onSnapshot(q, async (pickupSnapshot) => {
@@ -61,7 +60,7 @@ export default function PetugasDashboardPage() {
           usersMap.set(doc.id, doc.data());
         });
 
-        const pickupsWithUserInfo = pickupData.map(p => {
+        const pickupsWithUserInfo: PickupWithUser[] = pickupData.map(p => {
           const user = usersMap.get(p.userId);
           const userName = user?.email?.split('@')[0] || 'Nasabah';
           return {
@@ -69,6 +68,14 @@ export default function PetugasDashboardPage() {
             userName: userName,
             userInitial: userName.charAt(0).toUpperCase(),
           };
+        });
+
+        // Sort client-side to avoid complex query
+        pickupsWithUserInfo.sort((a, b) => {
+            if (a.date && b.date) {
+                return a.date.toMillis() - b.date.toMillis();
+            }
+            return 0;
         });
 
         setPickups(pickupsWithUserInfo);
