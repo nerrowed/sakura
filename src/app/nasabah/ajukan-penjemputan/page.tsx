@@ -72,7 +72,7 @@ export default function AjukanPenjemputanPage() {
         console.error("Error uploading photo:", error);
         toast({
           title: 'Error Unggah Foto',
-          description: 'Gagal mengunggah foto. Silakan coba lagi.',
+          description: 'Gagal mengunggah foto. Pastikan pengaturan izin di Firebase Storage sudah benar.',
           variant: 'destructive',
         });
         setLoading(false);
@@ -86,7 +86,7 @@ export default function AjukanPenjemputanPage() {
 
       await addDoc(collection(db, 'pickups'), {
         userId: user.uid,
-        wasteType,
+        type: wasteType, // Changed from wasteType to type for consistency
         photoURL,
         date: pickupDateTime,
         location,

@@ -1,11 +1,14 @@
 export interface Pickup {
     id: string;
-    date: string;
+    date: any;
     type: string;
-    weight: string;
-    points: number;
+    weight?: string;
+    points?: number;
     status: 'Selesai' | 'Diproses' | 'Diajukan' | 'Menunggu';
     userId: string;
+    photoURL?: string | null;
+    location?: string;
+    createdAt?: any;
 }
 
 export interface Saving {

@@ -67,8 +67,8 @@ export default function AdminDashboardPage() {
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
       
       const totalWasteThisMonth = pickups
-        .filter(p => new Date(p.date) >= startOfMonth)
-        .reduce((sum, p) => sum + (parseFloat(p.weight) || 0), 0);
+        .filter(p => p.date && new Date(p.date.toDate()) >= startOfMonth)
+        .reduce((sum, p) => sum + (parseFloat(p.weight || '0') || 0), 0);
 
       const totalSavings = pickups.reduce((sum, p) => sum + (p.points || 0), 0);
       
@@ -84,15 +84,16 @@ export default function AdminDashboardPage() {
 
       pickups
         .filter(p => {
-            const pickupDate = new Date(p.date);
+            if (!p.date) return false;
+            const pickupDate = new Date(p.date.toDate());
             const sevenDaysAgo = new Date();
             sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
             return pickupDate >= sevenDaysAgo;
         })
         .forEach(p => {
-            const dayName = new Date(p.date).toLocaleDateString('id-ID', { weekday: 'short' });
+            const dayName = new Date(p.date.toDate()).toLocaleDateString('id-ID', { weekday: 'short' });
             if (dailyVolumes.has(dayName)) {
-                dailyVolumes.set(dayName, dailyVolumes.get(dayName)! + (parseFloat(p.weight) || 0));
+                dailyVolumes.set(dayName, dailyVolumes.get(dayName)! + (parseFloat(p.weight || '0') || 0));
             }
         });
       

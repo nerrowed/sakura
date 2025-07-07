@@ -107,7 +107,7 @@ export default function NasabahDashboardPage() {
         </div>
 
         <div className="grid gap-6 md:grid-cols-3">
-            <Link href="#">
+            <Link href="/nasabah/ajukan-penjemputan">
               <Card className="hover:bg-accent/50 transition-colors h-full">
                   <CardHeader>
                       <BarChart3 className="h-8 w-8 text-primary mb-2" />
@@ -152,7 +152,7 @@ export default function NasabahDashboardPage() {
                     <TableBody>
                         {pickupHistory.length > 0 ? pickupHistory.slice(0, 3).map((item) => (
                             <TableRow key={item.id}>
-                                <TableCell>{new Date(item.date).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })}</TableCell>
+                                <TableCell>{item.date ? new Date(item.date.toDate()).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }) : 'N/A'}</TableCell>
                                 <TableCell>{item.type}</TableCell>
                                 <TableCell><Badge variant={getStatusVariant(item.status)}>{item.status}</Badge></TableCell>
                             </TableRow>
