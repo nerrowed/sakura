@@ -25,7 +25,6 @@ import {
   BellRing,
 } from 'lucide-react';
 import Link from 'next/link';
-import { Button } from './ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { useAuth } from '@/hooks/use-auth';
 
@@ -54,38 +53,33 @@ const adminLinks = [
 
 export function AppSidebar() {
   const pathname = usePathname();
-  const router = useRouter();
-  const { state } = useSidebar();
-  const { user, signOut } = useAuth();
-
-  let role = 'User';
+  const { user, signOut, role } = useAuth();
+  
+  let currentRole = 'Pengguna';
   let links = commonLinks;
   let userName = user?.email?.split('@')[0] || 'User';
   let userInitial = userName.charAt(0).toUpperCase();
 
-  if (pathname.startsWith('/nasabah')) {
-    role = 'Nasabah';
-    links = [...nasabahLinks, ...commonLinks];
-  } else if (pathname.startsWith('/petugas')) {
-    role = 'Petugas';
-    links = [...petugasLinks, ...commonLinks];
-  } else if (pathname.startsWith('/admin')) {
-    role = 'Admin';
-    links = [...adminLinks, ...commonLinks];
+  if (role === 'nasabah') {
+    currentRole = 'Nasabah';
+    links = [...nasabahLinks];
+  } else if (role === 'petugas') {
+    currentRole = 'Petugas';
+    links = [...petugasLinks];
+  } else if (role === 'admin') {
+    currentRole = 'Admin';
+    links = [...adminLinks];
   }
 
   const isActive = (href: string) => {
+    // Exact match for dashboard pages
     if (href === '/nasabah' || href === '/petugas' || href === '/admin') {
       return pathname === href;
     }
+    // Prefix match for other pages
     return pathname.startsWith(href);
   };
   
-  const handleSignOut = async () => {
-    await signOut();
-    router.push('/');
-  }
-
   return (
     <>
       <SidebarHeader className="flex items-center justify-between">
@@ -117,12 +111,12 @@ export function AppSidebar() {
           </Avatar>
           <div className="flex flex-col overflow-hidden whitespace-nowrap">
              <span className="font-semibold text-sm truncate capitalize">{userName}</span>
-             <span className="text-xs text-muted-foreground">{role}</span>
+             <span className="text-xs text-muted-foreground">{currentRole}</span>
           </div>
         </div>
         <SidebarMenu>
             <SidebarMenuItem>
-                 <SidebarMenuButton onClick={handleSignOut} tooltip={{children: 'Logout'}}>
+                 <SidebarMenuButton onClick={signOut} tooltip={{children: 'Logout'}}>
                     <LogOut />
                     <span>Logout</span>
                 </SidebarMenuButton>

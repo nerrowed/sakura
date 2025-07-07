@@ -9,11 +9,13 @@ import {
   createUserWithEmailAndPassword, 
   signOut as firebaseSignOut
 } from 'firebase/auth';
-import { auth } from '../lib/firebase';
+import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { auth, db } from '../lib/firebase';
 import { useRouter } from 'next/navigation';
 
 interface AuthContextType {
   user: User | null;
+  role: string | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<any>;
   signUp: (email: string, password: string) => Promise<any>;
@@ -24,12 +26,26 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [role, setRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        setUser(user);
+        const userDocRef = doc(db, 'users', user.uid);
+        const userDoc = await getDoc(userDocRef);
+        if (userDoc.exists()) {
+          setRole(userDoc.data().role);
+        } else {
+          // If user exists in Auth but not in Firestore, treat as an error or log them out
+          setRole(null);
+        }
+      } else {
+        setUser(null);
+        setRole(null);
+      }
       setLoading(false);
     });
 
@@ -40,21 +56,32 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return signInWithEmailAndPassword(auth, email, password);
   };
 
-  const signUp = (email: string, password: string) => {
-    return createUserWithEmailAndPassword(auth, email, password);
+  const signUp = async (email: string, password: string) => {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+    // Create user document in Firestore
+    await setDoc(doc(db, 'users', user.uid), {
+      email: user.email,
+      role: 'nasabah', // Default role
+      createdAt: serverTimestamp(),
+    });
+    // The onAuthStateChanged listener will handle setting the user and role state
+    return userCredential;
   };
 
   const signOut = async () => {
     await firebaseSignOut(auth);
-    // The redirect will be handled by the layout components
+    setRole(null);
+    router.push('/');
   };
 
   const value = {
     user,
+    role,
     loading,
     signIn,
     signUp,
-signOut,
+    signOut,
   };
 
   return (

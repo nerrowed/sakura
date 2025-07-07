@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -25,7 +25,7 @@ type FormValues = z.infer<typeof formSchema>;
 
 export default function AuthPage() {
   const [isLoading, setIsLoading] = useState(false);
-  const { signUp, signIn } = useAuth();
+  const { user, role, loading, signUp, signIn } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
 
@@ -36,12 +36,27 @@ export default function AuthPage() {
       password: '',
     },
   });
+  
+  // Redirect user if already logged in
+  useEffect(() => {
+    if (!loading && user && role) {
+       if (role === 'admin') {
+        router.push('/admin');
+      } else if (role === 'petugas') {
+        router.push('/petugas');
+      } else {
+        router.push('/nasabah');
+      }
+    }
+  }, [user, role, loading, router]);
+
 
   const handleAuthError = (error: FirebaseError) => {
     let description = 'Terjadi kesalahan. Silakan coba lagi.';
     switch (error.code) {
       case 'auth/user-not-found':
       case 'auth/wrong-password':
+      case 'auth/invalid-credential':
         description = 'Email atau password salah.';
         break;
       case 'auth/email-already-in-use':
@@ -51,7 +66,8 @@ export default function AuthPage() {
         description = 'Format email tidak valid.';
         break;
       default:
-        description = error.message;
+        console.error(error.code, error.message);
+        description = 'Terjadi kesalahan yang tidak diketahui.';
         break;
     }
     toast({
@@ -65,8 +81,8 @@ export default function AuthPage() {
     setIsLoading(true);
     try {
       await signIn(values.email, values.password);
-      toast({ title: 'Login Berhasil', description: 'Selamat datang kembali!' });
-      router.push('/nasabah'); // Redirect to nasabah dashboard by default
+      toast({ title: 'Login Berhasil', description: 'Selamat datang kembali! Mengarahkan...' });
+      // The useEffect will handle the redirect
     } catch (error) {
       handleAuthError(error as FirebaseError);
     } finally {
@@ -78,14 +94,26 @@ export default function AuthPage() {
     setIsLoading(true);
     try {
       await signUp(values.email, values.password);
-      toast({ title: 'Pendaftaran Berhasil', description: 'Akun Anda telah dibuat.' });
-      router.push('/nasabah'); // Redirect to nasabah dashboard after signup
+      toast({ title: 'Pendaftaran Berhasil', description: 'Akun Anda telah dibuat. Mengarahkan...' });
+      // The useEffect will handle the redirect
     } catch (error) {
       handleAuthError(error as FirebaseError);
     } finally {
       setIsLoading(false);
     }
   };
+  
+  // Display a loading indicator or null while checking auth state
+  if (loading || user) {
+     return (
+       <div className="flex h-screen w-full items-center justify-center">
+         <div className="flex flex-col items-center gap-4">
+            <Loader2 className="h-12 w-12 animate-spin text-primary" />
+            <p className="text-muted-foreground">Memeriksa sesi Anda...</p>
+          </div>
+       </div>
+    );
+  }
 
   return (
     <main className="flex min-h-screen w-full flex-col items-center justify-center bg-background p-4">
@@ -121,7 +149,7 @@ export default function AuthPage() {
                     </FormItem>
                   )} />
                   <Button type="submit" className="w-full font-bold" disabled={isLoading}>
-                    {isLoading && <Loader2 className="animate-spin" />} Masuk
+                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Masuk
                   </Button>
                 </form>
               </Form>
@@ -144,7 +172,7 @@ export default function AuthPage() {
                     </FormItem>
                   )} />
                    <Button type="submit" className="w-full font-bold" disabled={isLoading}>
-                    {isLoading && <Loader2 className="animate-spin" />} Daftar Akun Baru
+                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Daftar Akun Baru
                   </Button>
                 </form>
               </Form>

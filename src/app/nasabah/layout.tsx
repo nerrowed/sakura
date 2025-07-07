@@ -7,38 +7,38 @@ import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
+import { Loader2 } from 'lucide-react';
 
 export default function NasabahLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const auth = useAuth();
+  const { user, role, loading, signOut } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!auth.loading && !auth.user) {
-      router.push('/');
+     if (!loading) {
+      if (!user || role !== 'nasabah') {
+        router.push('/');
+      }
     }
-  }, [auth.loading, auth.user, router]);
+  }, [loading, user, role, router]);
 
-  if (auth.loading || !auth.user) {
+  if (loading || !user || role !== 'nasabah') {
     return (
       <div className="flex h-screen w-full items-center justify-center">
          <div className="flex flex-col items-center gap-4">
-            <Skeleton className="h-16 w-16 rounded-full" />
-            <div className="space-y-2 text-center">
-              <Skeleton className="h-4 w-[250px]" />
-              <Skeleton className="h-4 w-[200px]" />
-            </div>
+            <Loader2 className="h-12 w-12 animate-spin text-primary" />
+            <p className="text-muted-foreground">Memverifikasi akses nasabah...</p>
           </div>
        </div>
     );
   }
   
   const handleSignOut = async () => {
-    await auth.signOut();
-    router.push('/');
+    await signOut();
+    // The signOut function in useAuth now handles the redirect
   }
 
   return (
@@ -56,7 +56,7 @@ export default function NasabahLayout({
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
             <UserCircle className="h-5 w-5" />
-            <span>{auth.user.email}</span>
+            <span>{user.email}</span>
           </div>
            <Button variant="ghost" size="sm" onClick={handleSignOut}>
             <LogOut className="mr-2 h-4 w-4"/>
