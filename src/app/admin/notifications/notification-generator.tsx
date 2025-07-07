@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { generateNotificationText, GenerateNotificationTextInput, GenerateNotificationTextOutput } from '@/ai/flows/notification-text-generator';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -12,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Bot, Clipboard, Check, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { generateNotificationAction } from './actions';
 
 const formSchema = z.object({
   notificationType: z.string().min(1, 'Tipe notifikasi harus dipilih.'),
@@ -19,17 +19,6 @@ const formSchema = z.object({
 });
 
 type FormValues = z.infer<typeof formSchema>;
-
-async function generateAction(input: GenerateNotificationTextInput): Promise<{ success: boolean; data?: GenerateNotificationTextOutput, error?: string }> {
-  'use server';
-  try {
-    const result = await generateNotificationText(input);
-    return { success: true, data: result };
-  } catch (error) {
-    console.error(error);
-    return { success: false, error: 'Gagal menghasilkan teks notifikasi. Silakan coba lagi.' };
-  }
-}
 
 export default function NotificationGenerator() {
   const [generatedText, setGeneratedText] = useState('');
@@ -48,7 +37,7 @@ export default function NotificationGenerator() {
   async function onSubmit(values: FormValues) {
     setIsLoading(true);
     setGeneratedText('');
-    const result = await generateAction(values);
+    const result = await generateNotificationAction(values);
     setIsLoading(false);
 
     if (result.success && result.data) {
@@ -66,7 +55,7 @@ export default function NotificationGenerator() {
     navigator.clipboard.writeText(generatedText);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-  }
+  };
 
   return (
     <div className="grid gap-8 md:grid-cols-2">
@@ -88,7 +77,7 @@ export default function NotificationGenerator() {
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Pilih tipe notifikasi..." />
-                        </SelectTrigger>
+                        </Trigger>
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="pickup scheduled">Penjemputan Dijadwalkan</SelectItem>
