@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { BarChart3, HelpCircle, ClipboardList, Loader2, AlertTriangle } from "lucide-react";
-import Link from "next/link";
+import Link from "next/link"; // Keep Link import for the action cards
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 function getStatusVariant(status: string): "default" | "secondary" | "outline" | "destructive" {
@@ -81,10 +81,10 @@ export default function NasabahDashboardPage() {
 
   return (
     <div className="flex flex-col gap-6">
-        <header>
+      <header>
             <h1 className="text-3xl font-bold font-headline capitalize">Selamat datang, {userDisplayName}!</h1>
         </header>
-
+      
         <div className="grid gap-6 md:grid-cols-2">
             <Card>
                 <CardHeader>
@@ -99,9 +99,11 @@ export default function NasabahDashboardPage() {
                 </CardHeader>
             </Card>
         </div>
-
-        <div className="w-full">
-          <Button size="lg" className="w-full md:w-auto">Ajukan Penjemputan</Button>
+      
+        <div className="w-full flex justify-center">
+          <Link href="/nasabah/ajukan-penjemputan">
+            <Button size="lg" className="w-full md:w-auto text-lg px-8 py-3 bg-green-700 hover:bg-green-800 text-white rounded-lg">Ajukan Penjemputan</Button>
+          </Link>
         </div>
 
         <div className="grid gap-6 md:grid-cols-3">
@@ -133,7 +135,7 @@ export default function NasabahDashboardPage() {
               </Card>
             </Link>
         </div>
-
+      
         <Card>
             <CardHeader>
                 <CardTitle>Riwayat Transaksi</CardTitle>
