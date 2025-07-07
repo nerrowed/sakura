@@ -20,7 +20,7 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-const NotificationGenerator = () => {
+export default function NotificationGenerator() {
   const [generatedText, setGeneratedText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -156,6 +156,4 @@ const NotificationGenerator = () => {
       </Card>
     </div>
   );
-};
-
-export default NotificationGenerator;
+}
