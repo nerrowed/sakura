@@ -3,7 +3,7 @@ export interface Pickup {
     date: string;
     type: string;
     weight: string;
-    points: string;
+    points: number;
     status: 'Selesai' | 'Diproses' | 'Diajukan' | 'Menunggu';
     userId: string;
 }
