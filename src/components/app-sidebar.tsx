@@ -1,6 +1,6 @@
 'use client';
 
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import {
   SidebarHeader,
   SidebarContent,
@@ -9,7 +9,6 @@ import {
   SidebarMenuButton,
   SidebarFooter,
   SidebarTrigger,
-  useSidebar,
 } from '@/components/ui/sidebar';
 import {
   LayoutDashboard,
@@ -17,37 +16,21 @@ import {
   History,
   Users,
   BarChart3,
-  Bot,
-  User,
   LogOut,
   Leaf,
-  DollarSign,
   BellRing,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { useAuth } from '@/hooks/use-auth';
-
-const commonLinks = [
-  { href: '/notifikasi', label: 'Notifikasi', icon: BellRing },
-];
-
-const nasabahLinks = [
-  { href: '/nasabah', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/nasabah/request', label: 'Ajukan Penjemputan', icon: Truck },
-  { href: '/nasabah/history', label: 'Histori', icon: History },
-  { href: '/nasabah/savings', label: 'Tabungan', icon: DollarSign },
-];
+import { Button } from './ui/button';
 
 const petugasLinks = [
-  { href: '/petugas', label: 'Jadwal Hari Ini', icon: LayoutDashboard },
-  { href: '/petugas/history', label: 'Riwayat Penjemputan', icon: History },
+  { href: '/petugas', label: 'Jadwal Penjemputan', icon: LayoutDashboard },
 ];
 
 const adminLinks = [
   { href: '/admin', label: 'Statistik', icon: BarChart3 },
-  { href: '/admin/users', label: 'Kelola Pengguna', icon: Users },
-  { href: '/admin/schedules', label: 'Kelola Jadwal', icon: Truck },
   { href: '/admin/notifications', label: 'Notifikasi', icon: BellRing },
 ];
 
@@ -55,25 +38,19 @@ export function AppSidebar() {
   const pathname = usePathname();
   const { user, signOut, role } = useAuth();
   
-  let currentRole = 'Pengguna';
   let links: { href: string; label: string; icon: React.ElementType }[] = [];
   let userName = user?.email?.split('@')[0] || 'User';
   let userInitial = userName.charAt(0).toUpperCase();
 
-  if (role === 'nasabah') {
-    currentRole = 'Nasabah';
-    links = [...nasabahLinks];
-  } else if (role === 'petugas') {
-    currentRole = 'Petugas';
+  if (role === 'petugas') {
     links = [...petugasLinks];
   } else if (role === 'admin') {
-    currentRole = 'Admin';
     links = [...adminLinks];
   }
 
   const isActive = (href: string) => {
     // Exact match for dashboard pages
-    if (href === '/nasabah' || href === '/petugas' || href === '/admin') {
+    if (href === '/petugas' || href === '/admin') {
       return pathname === href;
     }
     // Prefix match for other pages
@@ -111,7 +88,7 @@ export function AppSidebar() {
           </Avatar>
           <div className="flex flex-col overflow-hidden whitespace-nowrap">
              <span className="font-semibold text-sm truncate capitalize">{userName}</span>
-             <span className="text-xs text-muted-foreground">{currentRole}</span>
+             <span className="text-xs text-muted-foreground capitalize">{role}</span>
           </div>
         </div>
         <SidebarMenu>
