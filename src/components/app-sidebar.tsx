@@ -48,6 +48,7 @@ const adminLinks = [
   { href: '/admin', label: 'Statistik', icon: BarChart3 },
   { href: '/admin/users', label: 'Kelola Pengguna', icon: Users },
   { href: '/admin/schedules', label: 'Kelola Jadwal', icon: Truck },
+  { href: '/admin/notifications', label: 'Notifikasi', icon: BellRing },
 ];
 
 export function AppSidebar() {
@@ -55,7 +56,7 @@ export function AppSidebar() {
   const { user, signOut, role } = useAuth();
   
   let currentRole = 'Pengguna';
-  let links = commonLinks;
+  let links: { href: string; label: string; icon: React.ElementType }[] = [];
   let userName = user?.email?.split('@')[0] || 'User';
   let userInitial = userName.charAt(0).toUpperCase();
 
