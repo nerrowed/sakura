@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { Flower2, LogOut, Menu, UserCircle } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter, usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 import {
@@ -21,8 +21,8 @@ import { cn } from '@/lib/utils';
 const navLinks = [
     { href: '/nasabah', label: 'Beranda' },
     { href: '/nasabah/ajukan-penjemputan', label: 'Ajukan Penjemputan' },
-    { href: '#', label: 'Riwayat Penjemputan' }, // Placeholder link
-    { href: '#', label: 'Profil' }, // Placeholder link
+    { href: '#', label: 'Riwayat Penjemputan' },
+    { href: '#', label: 'Profil' },
 ];
 
 export default function NasabahLayout({
@@ -60,24 +60,7 @@ export default function NasabahLayout({
   return (
     <div className="flex min-h-screen w-full flex-col">
       <header className="sticky top-0 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
-        <nav className="hidden flex-col gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-5 md:text-sm lg:gap-6">
-          <Link
-            href="/nasabah"
-            className="flex items-center gap-2 text-lg font-semibold md:text-base"
-          >
-            <Flower2 className="h-6 w-6 text-primary" />
-            <span className="font-headline tracking-wider">BANK SAMPAH SAKURA</span>
-          </Link>
-          {navLinks.map((link) => (
-            <Link
-                key={link.label}
-                href={link.href}
-                className={cn("transition-colors hover:text-foreground", pathname === link.href ? "text-foreground" : "text-muted-foreground")}
-            >
-                {link.label}
-            </Link>
-          ))}
-        </nav>
+        {/* Mobile Menu */}
         <Sheet>
           <SheetTrigger asChild>
             <Button
@@ -96,7 +79,7 @@ export default function NasabahLayout({
                 className="flex items-center gap-2 text-lg font-semibold"
               >
                 <Flower2 className="h-6 w-6 text-primary" />
-                <span className="font-headline tracking-wider">BANK SAMPAH SAKURA</span>
+                <span className="font-headline">Bank Sampah Sakura</span>
               </Link>
               {navLinks.map((link) => (
                 <Link
@@ -110,26 +93,50 @@ export default function NasabahLayout({
             </nav>
           </SheetContent>
         </Sheet>
-        <div className="flex w-full items-center justify-end gap-4 md:ml-auto md:gap-2 lg:gap-4">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="secondary" size="icon" className="rounded-full">
-                <UserCircle className="h-5 w-5" />
-                <span className="sr-only">Toggle user menu</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>
-                <p>Akun Saya</p>
-                <p className="text-xs font-normal text-muted-foreground">{user?.email}</p>
-                </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleSignOut} className="text-red-500 focus:text-red-500 focus:bg-red-50">
-                <LogOut className="mr-2 h-4 w-4"/>
-                Logout
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+        
+        {/* Desktop Header */}
+        <div className="flex w-full items-center justify-between">
+            <Link
+              href="/nasabah"
+              className="hidden items-center gap-2 text-lg font-semibold md:flex"
+            >
+              <Flower2 className="h-6 w-6 text-primary" />
+              <span className="font-headline tracking-tight">Bank Sampah Sakura</span>
+            </Link>
+            
+            <nav className="hidden flex-grow justify-center gap-6 text-sm font-medium md:flex">
+              {navLinks.map((link) => (
+                <Link
+                    key={link.label}
+                    href={link.href}
+                    className={cn("transition-colors hover:text-foreground", pathname === link.href ? "text-foreground" : "text-muted-foreground")}
+                >
+                    {link.label}
+                </Link>
+              ))}
+            </nav>
+            
+            <div className="flex items-center gap-4 md:ml-auto">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="secondary" size="icon" className="rounded-full">
+                    <UserCircle className="h-5 w-5" />
+                    <span className="sr-only">Toggle user menu</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>
+                    <p>Akun Saya</p>
+                    <p className="text-xs font-normal text-muted-foreground">{user?.email}</p>
+                    </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut} className="text-red-500 focus:text-red-500 focus:bg-red-50">
+                    <LogOut className="mr-2 h-4 w-4"/>
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
         </div>
       </header>
       <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
