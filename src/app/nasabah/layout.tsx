@@ -43,24 +43,19 @@ export default function NasabahLayout({
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
-      <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background px-6">
+      <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background px-4 sm:px-6">
         <Link href="/nasabah" className="flex items-center gap-2 font-semibold text-lg">
           <Flower2 className="h-6 w-6 text-primary" />
-          <span className="font-headline tracking-wider">BANK SAMPAH SAKURA</span>
+          <span className="hidden font-headline tracking-wider sm:inline">BANK SAMPAH SAKURA</span>
         </Link>
-        <nav className="hidden items-center gap-8 text-sm font-medium md:flex">
-          <Link href="/nasabah" className="text-foreground transition-colors hover:text-foreground/80 font-semibold">Beranda</Link>
-          <Link href="#" className="text-muted-foreground transition-colors hover:text-foreground">Ajukan Penjemputan</Link>
-          <Link href="#" className="text-muted-foreground transition-colors hover:text-foreground">Riwayat Penjemputan</Link>
-        </nav>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
             <UserCircle className="h-5 w-5" />
-            <span>{user.email}</span>
+            <span className="hidden sm:inline">{user.email}</span>
           </div>
            <Button variant="ghost" size="sm" onClick={handleSignOut}>
-            <LogOut className="mr-2 h-4 w-4"/>
-            Logout
+            <LogOut className="h-4 w-4 sm:mr-2"/>
+            <span className="hidden sm:inline">Logout</span>
           </Button>
         </div>
       </header>
