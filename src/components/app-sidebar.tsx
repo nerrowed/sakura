@@ -19,6 +19,7 @@ import {
   LogOut,
   Leaf,
   BellRing,
+  ClipboardList,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
@@ -32,6 +33,7 @@ const petugasLinks = [
 const adminLinks = [
   { href: '/admin', label: 'Statistik', icon: BarChart3 },
   { href: '/admin/users', label: 'Pengguna', icon: Users },
+  { href: '/admin/pickups', label: 'Monitoring Penjemputan', icon: ClipboardList },
   { href: '/admin/notifications', label: 'Notifikasi', icon: BellRing },
 ];
 
