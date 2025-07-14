@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
 import { MapPin, Clock, ArrowRight, Loader2, AlertTriangle, PackageCheck } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useToast } from "@/hooks/use-toast";
@@ -50,6 +49,7 @@ export default function PetugasDashboardPage() {
       const userIds = [...new Set(pickupData.map(p => p.userId))].filter(id => id);
 
       if (userIds.length === 0) {
+        // This case handles pickups with no user ID, though it's unlikely with current rules
         setPickups([]);
         setLoading(false);
         return;
@@ -157,7 +157,7 @@ export default function PetugasDashboardPage() {
   return (
     <div className="space-y-8">
       <header>
-        <h1 className="text-3xl font-bold font-headline">Jadwal Penjemputan</h1>
+        <h1 className="text-3xl font-bold font-headline">Daftar Tugas Penjemputan</h1>
         <p className="text-muted-foreground">Berikut adalah daftar tugas penjemputan yang perlu diselesaikan.</p>
       </header>
 

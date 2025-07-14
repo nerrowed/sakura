@@ -12,22 +12,20 @@ import {
 } from '@/components/ui/sidebar';
 import {
   LayoutDashboard,
-  Truck,
-  History,
   Users,
   BarChart3,
   LogOut,
   Leaf,
-  BellRing,
   ClipboardList,
+  History,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { useAuth } from '@/hooks/use-auth';
-import { Button } from './ui/button';
 
 const petugasLinks = [
-  { href: '/petugas', label: 'Jadwal Penjemputan', icon: LayoutDashboard },
+  { href: '/petugas', label: 'Tugas Penjemputan', icon: LayoutDashboard },
+  { href: '/petugas/riwayat', label: 'Riwayat Tugas', icon: History },
 ];
 
 const adminLinks = [
