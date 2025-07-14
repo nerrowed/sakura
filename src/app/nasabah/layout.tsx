@@ -70,7 +70,7 @@ export default function NasabahLayout({
           </Link>
           {navLinks.map((link) => (
             <Link
-                key={link.href}
+                key={link.label}
                 href={link.href}
                 className={cn("transition-colors hover:text-foreground", pathname === link.href ? "text-foreground" : "text-muted-foreground")}
             >
@@ -100,7 +100,7 @@ export default function NasabahLayout({
               </Link>
               {navLinks.map((link) => (
                 <Link
-                    key={link.href}
+                    key={link.label}
                     href={link.href}
                     className={cn("hover:text-foreground", pathname === link.href ? "text-foreground" : "text-muted-foreground")}
                 >
