@@ -31,6 +31,7 @@ const petugasLinks = [
 
 const adminLinks = [
   { href: '/admin', label: 'Statistik', icon: BarChart3 },
+  { href: '/admin/users', label: 'Pengguna', icon: Users },
   { href: '/admin/notifications', label: 'Notifikasi', icon: BellRing },
 ];
 
