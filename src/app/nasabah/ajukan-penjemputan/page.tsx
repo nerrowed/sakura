@@ -17,8 +17,8 @@ import { format } from 'date-fns';
 import { CalendarIcon, SendIcon, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import { requestPickup } from '@/ai/flows/request-pickup-flow';
-import type { RequestPickupInput } from '@/ai/flows/request-pickup-flow';
+import { addDoc, collection, Timestamp } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 const formSchema = z.object({
   wasteType: z.string().min(1, 'Jenis sampah harus dipilih.'),
@@ -62,20 +62,20 @@ export default function AjukanPenjemputanPage() {
     try {
       const dateTimeString = `${format(data.date, 'yyyy-MM-dd')}T${data.time}:00`;
       const pickupDateTime = new Date(dateTimeString);
+      const pickupTimestamp = Timestamp.fromDate(pickupDateTime);
       
-      const pickupData: RequestPickupInput = {
-          userId: user.uid,
-          userEmail: user.email || 'Tidak diketahui',
-          wasteType: data.wasteType,
-          pickupTimestamp: pickupDateTime.toISOString(),
-          location: data.location
-      };
-
-      await requestPickup(pickupData);
+      await addDoc(collection(db, 'pickups'), {
+        userId: user.uid,
+        type: data.wasteType,
+        date: pickupTimestamp,
+        location: data.location,
+        status: 'Diajukan',
+        createdAt: Timestamp.now(),
+      });
 
       toast({
         title: 'Sukses',
-        description: 'Pengajuan penjemputan berhasil dikirim dan notifikasi telah dikirim ke petugas.',
+        description: 'Pengajuan penjemputan berhasil dikirim.',
       });
 
       form.reset();
