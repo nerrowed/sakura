@@ -4,7 +4,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { collection, onSnapshot, query, where, Timestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { BarChart3, Recycle, Users, DollarSign, Loader2, UserCog, AlertTriangle, Calendar as CalendarIcon, Filter } from 'lucide-react';
 import type { Pickup } from '@/types';
@@ -274,5 +274,3 @@ export default function AdminDashboardPage() {
     </div>
   );
 }
-
-    
