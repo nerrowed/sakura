@@ -1,14 +1,15 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, AlertTriangle, Users } from 'lucide-react';
+import { Loader2, AlertTriangle, Users, Search } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Input } from '@/components/ui/input';
 
 interface AppUser {
   id: string;
@@ -26,6 +27,7 @@ export default function UserManagementPage() {
   const [users, setUsers] = useState<AppUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     const usersQuery = query(collection(db, "users"), orderBy("email"));
@@ -45,6 +47,15 @@ export default function UserManagementPage() {
 
     return () => unsubscribe();
   }, []);
+
+  const filteredUsers = useMemo(() => {
+    if (!searchTerm) {
+      return users;
+    }
+    return users.filter(user => 
+      user.email.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [users, searchTerm]);
 
   if (loading) {
     return (
@@ -77,9 +88,20 @@ export default function UserManagementPage() {
       <Card>
         <CardHeader>
           <CardTitle>Daftar Pengguna</CardTitle>
-          <CardDescription>Total {users.length} pengguna terdaftar.</CardDescription>
+          <CardDescription>Total {filteredUsers.length} dari {users.length} pengguna ditemukan.</CardDescription>
         </CardHeader>
         <CardContent>
+          <div className="mb-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Cari pengguna berdasarkan email..."
+                className="pl-10"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+          </div>
           <Table>
             <TableHeader>
               <TableRow>
@@ -88,8 +110,8 @@ export default function UserManagementPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {users.length > 0 ? (
-                users.map((user) => (
+              {filteredUsers.length > 0 ? (
+                filteredUsers.map((user) => (
                   <TableRow key={user.id}>
                     <TableCell className="font-medium">{user.email}</TableCell>
                     <TableCell>
@@ -104,7 +126,9 @@ export default function UserManagementPage() {
                   <TableCell colSpan={2} className="h-24 text-center">
                     <div className="flex flex-col items-center gap-2 text-muted-foreground">
                       <Users className="h-8 w-8" />
-                      <span>Belum ada pengguna yang terdaftar.</span>
+                      <span>
+                        {searchTerm ? "Pengguna tidak ditemukan." : "Belum ada pengguna yang terdaftar."}
+                      </span>
                     </div>
                   </TableCell>
                 </TableRow>
