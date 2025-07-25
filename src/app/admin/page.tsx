@@ -12,7 +12,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { DateRange } from 'react-day-picker';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
-import { format } from 'date-fns';
+import { format, addDays } from 'date-fns';
 import { id } from 'date-fns/locale';
 import { Calendar } from '@/components/ui/calendar';
 
@@ -48,10 +48,13 @@ export default function AdminDashboardPage() {
     return { from: start, to: end };
   });
 
-  const fetchAndProcessData = useCallback(() => {
+  const fetchAndProcessData = useCallback((currentDateRange: DateRange | undefined) => {
     setLoading(true);
     setError(null);
     
+    // Unsubscribe functions array
+    const unsubscribes: (() => void)[] = [];
+
     // User stats are not date-dependent in this logic
     const usersQuery = query(collection(db, "users"));
     const unsubscribeUsers = onSnapshot(usersQuery, (querySnapshot) => {
@@ -70,24 +73,26 @@ export default function AdminDashboardPage() {
       console.error("Error fetching users: ", err);
       setError("Gagal memuat data pengguna.");
     });
+    unsubscribes.push(unsubscribeUsers);
+
 
     // Pickups query depends on date range
-    let pickupsQuery;
-    if (dateRange?.from && dateRange?.to) {
-        const startTimestamp = Timestamp.fromDate(dateRange.from);
-        // Add one day to 'to' to make the range inclusive
-        const endOfDay = new Date(dateRange.to);
-        endOfDay.setHours(23, 59, 59, 999);
-        const endTimestamp = Timestamp.fromDate(endOfDay);
-        
-        pickupsQuery = query(
-            collection(db, "pickups"), 
-            where("date", ">=", startTimestamp),
-            where("date", "<=", endTimestamp)
-        );
-    } else {
-        pickupsQuery = query(collection(db, "pickups"));
+    if (!currentDateRange?.from || !currentDateRange?.to) {
+      setError("Rentang tanggal tidak valid.");
+      setLoading(false);
+      return () => unsubscribes.forEach(unsub => unsub());
     }
+    
+    const startTimestamp = Timestamp.fromDate(currentDateRange.from);
+    const endOfDay = new Date(currentDateRange.to);
+    endOfDay.setHours(23, 59, 59, 999);
+    const endTimestamp = Timestamp.fromDate(endOfDay);
+    
+    const pickupsQuery = query(
+        collection(db, "pickups"), 
+        where("date", ">=", startTimestamp),
+        where("date", "<=", endTimestamp)
+    );
 
     const unsubscribePickups = onSnapshot(pickupsQuery, (querySnapshot) => {
       const pickups: Pickup[] = [];
@@ -100,29 +105,28 @@ export default function AdminDashboardPage() {
 
       // Process data for chart based on date range
       const dailyVolumes = new Map<string, number>();
-      if(dateRange?.from && dateRange?.to) {
-        let currentDate = new Date(dateRange.from);
-        while (currentDate <= dateRange.to) {
-            dailyVolumes.set(format(currentDate, 'dd/MM'), 0);
-            currentDate.setDate(currentDate.getDate() + 1);
-        }
+      let currentDate = new Date(currentDateRange.from as Date);
+      while (currentDate <= (currentDateRange.to as Date)) {
+          dailyVolumes.set(format(currentDate, 'dd/MM/yy'), 0);
+          currentDate = addDays(currentDate, 1);
       }
 
       pickups.forEach(p => {
         if (!p.date) return;
-        const dayName = format(new Date(p.date.toDate()), 'dd/MM');
+        const dayName = format(new Date(p.date.toDate()), 'dd/MM/yy');
         if (dailyVolumes.has(dayName)) {
             dailyVolumes.set(dayName, dailyVolumes.get(dayName)! + (parseFloat(p.weight || '0') || 0));
         }
       });
       
-      const formattedDailyData = Array.from(dailyVolumes.entries()).map(([name, volume]) => ({
-          name,
-          volume: Math.round(volume * 10) / 10
-      }));
+      const sortedDailyData = Array.from(dailyVolumes.entries()).map(([name, volume]) => ({
+          name: name.substring(0, 5), // 'dd/MM'
+          volume: Math.round(volume * 10) / 10,
+          date: new Date(`20${name.substring(6,8)}-${name.substring(3,5)}-${name.substring(0,2)}`)
+      })).sort((a,b) => a.date.getTime() - b.date.getTime());
 
-      setDailyData(formattedDailyData);
-
+      setDailyData(sortedDailyData);
+      
       setStats(prevStats => ({
         ...prevStats,
         totalWaste,
@@ -136,21 +140,22 @@ export default function AdminDashboardPage() {
       setError("Gagal memuat data penjemputan. Pastikan indeks yang diperlukan telah dibuat di Firestore. (date & status)");
       setLoading(false);
     });
+    unsubscribes.push(unsubscribePickups);
 
-    return () => {
-      unsubscribeUsers();
-      unsubscribePickups();
-    };
-  }, [dateRange]);
+    return () => unsubscribes.forEach(unsub => unsub());
+  }, []);
 
+  // Fetch data on initial mount
   useEffect(() => {
-    // Initial fetch
-    const unsubscribe = fetchAndProcessData();
+    const unsubscribe = fetchAndProcessData(dateRange);
     return () => unsubscribe();
-  }, []); // Only run once on mount
+  }, []);
 
   const handleFilterClick = () => {
-     fetchAndProcessData();
+     const unsubscribe = fetchAndProcessData(dateRange);
+     // In this setup, we don't need to return the unsubscribe function
+     // as it will be handled by onSnapshot's lifecycle.
+     // For a single getDocs call, you wouldn't need to unsubscribe.
   };
 
 
@@ -237,7 +242,9 @@ export default function AdminDashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{stat.value}</div>
-                <p className="text-xs text-muted-foreground">dalam rentang waktu yang dipilih</p>
+                <p className="text-xs text-muted-foreground">
+                  {stat.title.includes('Aktif') ? 'Total pengguna terdaftar' : 'dalam rentang waktu yang dipilih'}
+                </p>
               </CardContent>
             </Card>
           ))}
