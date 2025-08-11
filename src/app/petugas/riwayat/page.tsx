@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { collection, onSnapshot, query, where, orderBy, getDocs } from "firebase/firestore";
+import { collection, onSnapshot, query, orderBy, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -21,26 +21,29 @@ export default function RiwayatTugasPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Query for pickups that are 'Selesai' (Completed)
     const pickupsQuery = query(
         collection(db, "pickups"), 
-        where("status", "==", "Selesai"),
         orderBy("date", "desc")
     );
     
     const unsubscribe = onSnapshot(pickupsQuery, async (pickupSnapshot) => {
       setLoading(true);
-      if (pickupSnapshot.empty) {
+
+      // Filter for "Selesai" status on the client-side
+      const completedPickupsData = pickupSnapshot.docs
+        .map(doc => ({ id: doc.id, ...doc.data() } as Pickup))
+        .filter(p => p.status === 'Selesai');
+
+      if (completedPickupsData.length === 0) {
         setPickups([]);
         setLoading(false);
         return;
       }
 
-      const pickupData = pickupSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Pickup));
-      const userIds = [...new Set(pickupData.map(p => p.userId))].filter(id => id);
+      const userIds = [...new Set(completedPickupsData.map(p => p.userId))].filter(id => id);
 
       if (userIds.length === 0) {
-        const pickupsWithNoUser: PickupWithUser[] = pickupData.map(p => ({ ...p, userName: 'Pengguna tidak diketahui' }));
+        const pickupsWithNoUser: PickupWithUser[] = completedPickupsData.map(p => ({ ...p, userName: 'Pengguna tidak diketahui' }));
         setPickups(pickupsWithNoUser);
         setLoading(false);
         return;
@@ -53,7 +56,7 @@ export default function RiwayatTugasPage() {
           usersMap.set(doc.id, doc.data());
         });
 
-        const pickupsWithUserInfo: PickupWithUser[] = pickupData.map(p => {
+        const pickupsWithUserInfo: PickupWithUser[] = completedPickupsData.map(p => {
           const user = usersMap.get(p.userId);
           const userName = user?.email || 'Pengguna tidak diketahui';
           return {
