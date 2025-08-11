@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { collection, onSnapshot, query, orderBy, getDocs } from "firebase/firestore";
+import { collection, onSnapshot, query, orderBy, getDocs, where } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -39,18 +39,10 @@ export default function RiwayatTugasPage() {
         setLoading(false);
         return;
       }
-
-      const userIds = [...new Set(completedPickupsData.map(p => p.userId))].filter(id => id);
-
-      if (userIds.length === 0) {
-        const pickupsWithNoUser: PickupWithUser[] = completedPickupsData.map(p => ({ ...p, userName: 'Pengguna tidak diketahui' }));
-        setPickups(pickupsWithNoUser);
-        setLoading(false);
-        return;
-      }
-
+      
       try {
-        const usersSnapshot = await getDocs(query(collection(db, "users"), where("__name__", "in", userIds)));
+        // Fetch all users once and create a map for efficient lookup
+        const usersSnapshot = await getDocs(query(collection(db, "users")));
         const usersMap = new Map();
         usersSnapshot.forEach(doc => {
           usersMap.set(doc.id, doc.data());
