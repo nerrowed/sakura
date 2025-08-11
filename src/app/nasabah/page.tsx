@@ -9,9 +9,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { BarChart3, HelpCircle, ClipboardList, Loader2, AlertTriangle } from "lucide-react";
-import Link from "next/link"; // Keep Link import for the action cards
+import { BarChart3, HelpCircle, ClipboardList, Loader2, AlertTriangle, PlusCircle } from "lucide-react";
+import Link from "next/link";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { useRouter } from "next/navigation";
 
 function getStatusVariant(status: string): "default" | "secondary" | "outline" | "destructive" {
     switch (status) {
@@ -27,6 +28,7 @@ export default function NasabahDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
+  const router = useRouter();
   
   useEffect(() => {
     if (!user) {
@@ -61,11 +63,16 @@ export default function NasabahDashboardPage() {
   
   const totalPoints = pickupHistory.reduce((acc, item) => acc + (item.points || 0), 0);
   const userDisplayName = user?.email?.split('@')[0] || 'Nasabah';
+  const upcomingPickup = pickupHistory.find(p => p.status === 'Diajukan' || p.status === 'Diproses');
+
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-full">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="flex h-[80vh] w-full items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-12 w-12 animate-spin text-primary" />
+          <p className="text-muted-foreground">Memuat data Anda...</p>
+        </div>
       </div>
     );
   }
@@ -84,88 +91,72 @@ export default function NasabahDashboardPage() {
     <div className="flex flex-col gap-6">
       <header>
             <h1 className="text-3xl font-bold font-headline capitalize">Selamat datang, {userDisplayName}!</h1>
+            <p className="text-muted-foreground">Ini ringkasan aktivitas bank sampah Anda.</p>
         </header>
       
         <div className="grid gap-6 md:grid-cols-2">
             <Card>
                 <CardHeader>
-                    <CardDescription>Poin tabungan sampah</CardDescription>
+                    <CardDescription>Total Poin Tabungan</CardDescription>
                     <CardTitle className="text-4xl">{new Intl.NumberFormat('id-ID').format(totalPoints)}</CardTitle>
                 </CardHeader>
             </Card>
             <Card>
                 <CardHeader>
-                    <CardDescription>Jadwal penjemputan berikutnya</CardDescription>
-                    <CardTitle className="text-4xl">Belum ada</CardTitle>
+                    <CardDescription>Jadwal Penjemputan Berikutnya</CardDescription>
+                    <CardTitle className="text-2xl md:text-3xl">
+                        {upcomingPickup ? 
+                        new Date(upcomingPickup.date.toDate()).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' })
+                        : 'Belum ada jadwal'}
+                    </CardTitle>
                 </CardHeader>
             </Card>
         </div>
       
-        <div className="w-full flex justify-center">
-          <Link href="/nasabah/ajukan-penjemputan">
-            <Button size="lg" className="w-full md:w-auto text-lg px-8 py-3 bg-green-700 hover:bg-green-800 text-white rounded-lg">Ajukan Penjemputan</Button>
-          </Link>
-        </div>
-
-        <div className="grid gap-6 md:grid-cols-3">
-            <Link href="/nasabah/ajukan-penjemputan">
-              <Card className="hover:bg-accent/50 transition-colors h-full">
-                  <CardHeader>
-                      <BarChart3 className="h-8 w-8 text-primary mb-2" />
-                      <CardTitle className="text-lg">Ajukan Penjemputan</CardTitle>
-                      <CardDescription>Ajukan permintaan penjemputan sampah</CardDescription>
-                  </CardHeader>
-              </Card>
-            </Link>
-             <Link href="#">
-              <Card className="hover:bg-accent/50 transition-colors h-full">
-                  <CardHeader>
-                      <HelpCircle className="h-8 w-8 text-primary mb-2" />
-                      <CardTitle className="text-lg">Jadwal Penjemputan</CardTitle>
-                      <CardDescription>Lihat jadwal penjemputan sampah Anda</CardDescription>
-                  </CardHeader>
-              </Card>
-            </Link>
-             <Link href="#">
-              <Card className="hover:bg-accent/50 transition-colors h-full">
-                  <CardHeader>
-                      <ClipboardList className="h-8 w-8 text-primary mb-2" />
-                      <CardTitle className="text-lg">Riwayat Transaksi</CardTitle>
-                      <CardDescription>Pantau riwayat penjemputan sampah</CardDescription>
-                  </CardHeader>
-              </Card>
-            </Link>
-        </div>
-      
         <Card>
-            <CardHeader>
-                <CardTitle>Riwayat Transaksi</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Tanggal</TableHead>
-                            <TableHead>Jenis Sampah</TableHead>
-                            <TableHead>Status</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {pickupHistory.length > 0 ? pickupHistory.slice(0, 3).map((item) => (
-                            <TableRow key={item.id}>
-                                <TableCell>{item.date ? new Date(item.date.toDate()).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }) : 'N/A'}</TableCell>
-                                <TableCell>{item.type}</TableCell>
-                                <TableCell><Badge variant={getStatusVariant(item.status)}>{item.status}</Badge></TableCell>
-                            </TableRow>
-                        )) : (
-                            <TableRow>
-                                <TableCell colSpan={3} className="text-center">Belum ada riwayat transaksi.</TableCell>
-                            </TableRow>
-                        )}
-                    </TableBody>
-                </Table>
-            </CardContent>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle>Riwayat Transaksi Terbaru</CardTitle>
+              <CardDescription>Menampilkan 3 transaksi terakhir Anda.</CardDescription>
+            </div>
+            <Button onClick={() => router.push('/nasabah/ajukan-penjemputan')}>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Ajukan Penjemputan
+            </Button>
+          </CardHeader>
+          <CardContent>
+              <Table>
+                  <TableHeader>
+                      <TableRow>
+                          <TableHead>Tanggal</TableHead>
+                          <TableHead>Jenis Sampah</TableHead>
+                          <TableHead className="text-right">Status</TableHead>
+                      </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                      {pickupHistory.length > 0 ? pickupHistory.slice(0, 3).map((item) => (
+                          <TableRow key={item.id} onClick={() => router.push('/nasabah/riwayat-penjemputan')} className="cursor-pointer">
+                              <TableCell>{item.date ? new Date(item.date.toDate()).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }) : 'N/A'}</TableCell>
+                              <TableCell>{item.type}</TableCell>
+                              <TableCell className="text-right"><Badge variant={getStatusVariant(item.status)}>{item.status}</Badge></TableCell>
+                          </TableRow>
+                      )) : (
+                          <TableRow>
+                              <TableCell colSpan={3} className="text-center h-24">Belum ada riwayat transaksi.</TableCell>
+                          </TableRow>
+                      )}
+                  </TableBody>
+              </Table>
+               {pickupHistory.length > 3 && (
+                  <div className="text-center mt-4">
+                    <Button variant="link" onClick={() => router.push('/nasabah/riwayat-penjemputan')}>
+                      Lihat Semua Riwayat
+                    </Button>
+                  </div>
+                )}
+          </CardContent>
         </Card>
+
     </div>
   );
 }

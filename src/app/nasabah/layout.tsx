@@ -21,7 +21,7 @@ import { cn } from '@/lib/utils';
 const navLinks = [
     { href: '/nasabah', label: 'Beranda' },
     { href: '/nasabah/ajukan-penjemputan', label: 'Ajukan Penjemputan' },
-    { href: '#', label: 'Riwayat Penjemputan' },
+    { href: '/nasabah/riwayat-penjemputan', label: 'Riwayat Penjemputan' },
     { href: '/nasabah/profil', label: 'Profil' },
 ];
 
