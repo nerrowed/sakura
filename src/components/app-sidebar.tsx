@@ -22,6 +22,7 @@ import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { useAuth } from '@/hooks/use-auth';
 import Image from 'next/image';
+import sakuraIcon from '../app/sakura.ico';
 
 const petugasLinks = [
   { href: '/petugas', label: 'Tugas Penjemputan', icon: LayoutDashboard },
@@ -61,7 +62,7 @@ export function AppSidebar() {
     <>
       <SidebarHeader className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-            <Image src="/sakura.ico" alt="SakuraGo Logo" width={28} height={28} />
+            <Image src={sakuraIcon} alt="SakuraGo Logo" width={28} height={28} />
             <span className="text-xl font-semibold text-primary font-headline">SakuraGo</span>
         </div>
         <SidebarTrigger className="hidden md:flex" />

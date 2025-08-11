@@ -9,6 +9,7 @@ import { Loader2, LogOut, UserCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
+import sakuraIcon from '../sakura.ico';
 
 export default function AdminLayout({
   children,
@@ -47,7 +48,7 @@ export default function AdminLayout({
           <div className="flex items-center gap-2">
             <SidebarTrigger className="md:hidden" />
             <Link href="/admin" className="hidden items-center gap-2 font-semibold text-lg md:flex">
-                <Image src="/sakura.ico" alt="SakuraGo Logo" width={24} height={24} />
+                <Image src={sakuraIcon} alt="SakuraGo Logo" width={24} height={24} />
                 <span className="font-headline tracking-wider">SAKURAGO ADMIN</span>
             </Link>
           </div>
