@@ -18,6 +18,7 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
+import sakuraIcon from '../sakura.ico';
 
 const navLinks = [
     { href: '/nasabah', label: 'Beranda' },
@@ -81,7 +82,7 @@ export default function NasabahLayout({
                     href="/nasabah"
                     className="flex items-center gap-2 text-lg font-semibold"
                   >
-                    <Image src="/sakura.ico" alt="SakuraGo Logo" width={24} height={24} />
+                    <Image src={sakuraIcon} alt="SakuraGo Logo" width={24} height={24} />
                     <span className="font-headline">Bank Sampah Sakura</span>
                   </Link>
                   {navLinks.map((link) => (
@@ -100,7 +101,7 @@ export default function NasabahLayout({
               href="/nasabah"
               className="hidden items-center gap-2 text-lg font-semibold md:flex"
             >
-              <Image src="/sakura.ico" alt="SakuraGo Logo" width={24} height={24} />
+              <Image src={sakuraIcon} alt="SakuraGo Logo" width={24} height={24} />
               <span className="font-headline tracking-tight whitespace-nowrap">Bank Sampah Sakura</span>
             </Link>
           </div>
