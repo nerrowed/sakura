@@ -13,8 +13,9 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
-import { Leaf, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { FirebaseError } from 'firebase/app';
+import Image from 'next/image';
 
 const formSchema = z.object({
   email: z.string().email({ message: 'Format email tidak valid.' }),
@@ -120,7 +121,7 @@ export default function AuthPage() {
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-            <Leaf className="h-10 w-10 text-primary" />
+            <Image src="/sakura.ico" alt="SakuraGo Logo" width={40} height={40} />
           </div>
           <CardTitle className="font-headline text-4xl font-bold text-primary">SakuraGo</CardTitle>
           <CardDescription className="pt-1">Sistem Digitalisasi Penjemputan Sampah</CardDescription>

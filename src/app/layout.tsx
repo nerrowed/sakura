@@ -6,6 +6,9 @@ import { AuthProvider } from '@/hooks/use-auth';
 export const metadata: Metadata = {
   title: 'SakuraGo',
   description: 'Sistem Digitalisasi Penjemputan Sampah',
+  icons: {
+    icon: '/sakura.ico',
+  },
 };
 
 export default function RootLayout({

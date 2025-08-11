@@ -8,7 +8,7 @@ import { SidebarProvider, Sidebar, SidebarInset, SidebarTrigger } from '@/compon
 import { Loader2, LogOut, UserCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { Flower2 } from 'lucide-react';
+import Image from 'next/image';
 
 export default function PetugasLayout({
   children,
@@ -47,7 +47,7 @@ export default function PetugasLayout({
           <div className="flex items-center gap-2">
             <SidebarTrigger className="md:hidden" />
             <Link href="/petugas" className="hidden items-center gap-2 font-semibold text-lg md:flex">
-                <Flower2 className="h-6 w-6 text-primary" />
+                <Image src="/sakura.ico" alt="SakuraGo Logo" width={24} height={24} />
                 <span className="font-headline tracking-wider">BANK SAMPAH SAKURA</span>
             </Link>
           </div>

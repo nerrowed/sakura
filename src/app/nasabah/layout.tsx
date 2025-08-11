@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Flower2, LogOut, Menu, UserCircle } from 'lucide-react';
+import { LogOut, Menu, UserCircle } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter, usePathname } from 'next/navigation';
 import { useEffect } from 'react';
@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
+import Image from 'next/image';
 
 const navLinks = [
     { href: '/nasabah', label: 'Beranda' },
@@ -80,7 +81,7 @@ export default function NasabahLayout({
                     href="/nasabah"
                     className="flex items-center gap-2 text-lg font-semibold"
                   >
-                    <Flower2 className="h-6 w-6 text-primary" />
+                    <Image src="/sakura.ico" alt="SakuraGo Logo" width={24} height={24} />
                     <span className="font-headline">Bank Sampah Sakura</span>
                   </Link>
                   {navLinks.map((link) => (
@@ -99,7 +100,7 @@ export default function NasabahLayout({
               href="/nasabah"
               className="hidden items-center gap-2 text-lg font-semibold md:flex"
             >
-              <Flower2 className="h-6 w-6 text-primary" />
+              <Image src="/sakura.ico" alt="SakuraGo Logo" width={24} height={24} />
               <span className="font-headline tracking-tight whitespace-nowrap">Bank Sampah Sakura</span>
             </Link>
           </div>
