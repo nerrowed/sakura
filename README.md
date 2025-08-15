@@ -29,7 +29,6 @@ Aplikasi ini dibagi menjadi tiga peran utama dengan fungsionalitas yang disesuai
 - **Autentikasi**: Firebase Authentication
 - **Styling**: Tailwind CSS
 - **UI Components**: ShadCN UI
-- **Hosting**: Firebase App Hosting
 
 ## Developer
 
