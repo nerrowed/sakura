@@ -111,3 +111,5 @@ Sebagai admin, Anda memiliki akses penuh untuk memantau seluruh aktivitas sistem
 1.  Buka menu **"Monitoring Penjemputan"**.
 2.  Halaman ini menampilkan seluruh riwayat transaksi penjemputan dari semua nasabah.
 3.  Anda dapat memantau status setiap transaksi dan melihat detailnya, seperti nasabah, tanggal, berat, poin, dan status.
+
+.
